@@ -23,6 +23,10 @@ internal let kCurrentTOCMenu = "com.folioreader.kCurrentTOCMenu"
 internal let kHighlightRange = 30
 internal let kReuseCellIdentifier = "com.folioreader.Cell.ReuseIdentifier"
 
+public func kitVersion()  {
+    print("12.3.1")
+}
+
 public enum FolioReaderError: Error, LocalizedError {
     case bookNotAvailable
     case errorInContainer

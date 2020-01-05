@@ -17,6 +17,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 //    }
 });
 
+document.addEventListener('click', function() {
+                          
+});
+
 // Generate a GUID
 function guid() {
     function s4() {

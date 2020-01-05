@@ -45,9 +45,18 @@ open class FolioReaderWebView: UIWebView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    
+    
     // MARK: - UIMenuController
 
     open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+         
+        if action == #selector(select(_:)) {
+            let text = selectionText()
+            
+            SelectedTextCenter.share.update(text: text)
+        }
+        
         guard readerConfig.useReaderMenuController else {
             return super.canPerformAction(action, withSender: sender)
         }
@@ -353,6 +362,11 @@ open class FolioReaderWebView: UIWebView {
     }
     
     // MARK: WebView
+    
+    func selectionText() -> String? {
+        let text = self.js("getSelectedText()")
+        return text
+    }
     
     func clearTextSelection() {
         // Forces text selection clearing

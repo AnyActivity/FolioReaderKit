@@ -182,13 +182,13 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         configureNavBar()
 
         // Page indicator view
-        if (self.readerConfig.hidePageIndicator == false) {
-            let frame = self.frameForPageIndicatorView()
-            pageIndicatorView = FolioReaderPageIndicator(frame: frame, readerConfig: readerConfig, folioReader: folioReader)
-            if let pageIndicatorView = pageIndicatorView {
-                view.addSubview(pageIndicatorView)
-            }
-        }
+//        if (self.readerConfig.hidePageIndicator == false) {
+//            let frame = self.frameForPageIndicatorView()
+//            pageIndicatorView = FolioReaderPageIndicator(frame: frame, readerConfig: readerConfig, folioReader: folioReader)
+//            if let pageIndicatorView = pageIndicatorView {
+//                view.addSubview(pageIndicatorView)
+//            }
+//        }
 
         guard let readerContainer = readerContainer else { return }
         self.scrollScrubber = ScrollScrubber(frame: frameForScrollScrubber(), withReaderContainer: readerContainer)
