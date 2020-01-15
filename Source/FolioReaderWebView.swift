@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import PetalFanyi
+import PromiseKit
+
 
 /// The custom WebView used in each page
 open class FolioReaderWebView: UIWebView {
@@ -37,8 +40,14 @@ open class FolioReaderWebView: UIWebView {
 
     init(frame: CGRect, readerContainer: FolioReaderContainer) {
         self.readerContainer = readerContainer
-
+        
+        
+        let view = UIView(frame: CGRect(x: 50, y: 0, width: 90, height: 2))
+        view.backgroundColor = UIColor.red
+        
         super.init(frame: frame)
+        self.addSubview(view)
+        self.createMenu(options: true)
     }
 
     required public init?(coder aDecoder: NSCoder) {
@@ -46,21 +55,40 @@ open class FolioReaderWebView: UIWebView {
     }
 
     
-    
+    func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebView.NavigationType) -> Bool {
+        
+        
+        if request.url?.absoluteString.hasPrefix("native") ?? false {
+            return false
+        }
+        
+        return true
+    }
     // MARK: - UIMenuController
 
     open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-         
-        if action == #selector(select(_:)) {
-            let text = selectionText()
-            
-            SelectedTextCenter.share.update(text: text)
-        }
-        
+        InfoTipController.share.clear()
         guard readerConfig.useReaderMenuController else {
             return super.canPerformAction(action, withSender: sender)
         }
-
+        
+        if action == #selector(showTranslate) {
+            InfoTipController.share.clear()
+            
+            DispatchQueue.main.async {
+                UIMenuController.shared.update()
+                if let text = self.selectionText(),
+                    let rect = self.selectionTextRect() {
+                    
+                    Translator.share.translate(text) { (result, err) in
+                        InfoTipController.share.show(in: self, result, rect: rect)
+                    }
+                }
+            }
+            return true
+        }
+        
+        return false
         if isShare {
             return false
         } else if isColors {
@@ -257,10 +285,88 @@ open class FolioReaderWebView: UIWebView {
         //FIX: https://github.com/FolioReader/FolioReaderKit/issues/316
         setMenuVisible(false)
     }
-
+    
+    // MARK: - Web
+    
+    
+    
     // MARK: - Create and show menu
+    
+    @objc func showTranslate() {
+        
+    }
+    
+    func updateMenu() {
+        let text = self.selectionText()
+//        self.translateMenu?.title = text ?? ""
+        Translator.share.translate(text ?? "") { (r, e) in
+            self.translateMenu?.title = r
+//            UIMenuController.shared.update()
+        }
+        
+    }
+    
+    var translateMenu : UIMenuItem? = nil
+    
+    func createMenu(options:Bool) {
+        guard (self.readerConfig.useReaderMenuController == true) else {
+            return
+        }
+        let menu = UIMenuItem(title: "...", action: #selector(showTranslate))
+        self.translateMenu = menu
+        UIMenuController.shared.menuItems = [menu]
+        
+        
+//        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
+//            UIMenuController.shared.update()
+//
+//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
+//                self.setMenuVisible(true)
+//            }
+//
+//        }
+        
+//        Translator.share.translate(text ) { (r, er) in
+//            menu.title = r
+//            UIMenuController.shared.update()
+//            UIMenuController.shared.menuItems?.append(UIMenuItem(title: r, action: { (item) in
+//                print("TAP..........")
+//            }))
+//            UIMenuController.shared.setMenuVisible(true, animated: true)
+//        }
+        
+//        let resultText = Translator.share.translate(text ?? "", result: <#(Result, Error?) -> Void#>)
+//        print(resultText)
+        
+//        let menu = UIMenuItem(title: resultText) { (item) in
+//            print("hello")
+//        }
+//        UIMenuController.shared.menuItems = [menu]
+//        if #available(iOS 13.0, *) {
+//            cshowMenu(from: self, rect: CGRect())
+//        } else {
+//            // Fallback on earlier versions
+//        }
+       
+//        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
+//           let resultText = Translator.share.translate(text ?? "")
+//
+//            let menu = UIMenuItem(title: resultText) { (item) in
+//                print("hello")
+//            }
+//            UIMenuController.shared.menuItems = [menu]
+//            if #available(iOS 13.0, *) {
+//                UIMenuController.shared.showMenu(from: self, rect: CGRect())
+//            } else {
+//                // Fallback on earlier versions
+//            }
+//            UIMenuController.shared.update()
+//        }
+        
+    }
+    
 
-    func createMenu(options: Bool) {
+    func createMenu_b(options: Bool) {
         guard (self.readerConfig.useReaderMenuController == true) else {
             return
         }
@@ -361,12 +467,28 @@ open class FolioReaderWebView: UIWebView {
         return callback
     }
     
+    
     // MARK: WebView
     
     func selectionText() -> String? {
         let text = self.js("getSelectedText()")
         return text
     }
+    
+    func selectionTextRect() -> CGRect? {
+        guard let rectString = self.js("rectsForSelection()"),
+            let data = rectString.data(using: String.Encoding.utf8),
+            let json = try? JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.allowFragments),
+            let rectDic = json as? [String:CGFloat] else {
+            return nil
+        }
+        
+        return CGRect(x: rectDic["x"] ?? 0,
+                      y: rectDic["y"] ?? 0,
+                      width: rectDic["width"] ?? 0,
+                      height: rectDic["height"] ?? 0)
+    }
+    
     
     func clearTextSelection() {
         // Forces text selection clearing

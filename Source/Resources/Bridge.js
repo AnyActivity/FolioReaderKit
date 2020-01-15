@@ -19,7 +19,46 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 document.addEventListener('click', function() {
                           
+                          window.location = 'hello:webPageClick'
 });
+
+function rectsForSelection() {
+  let i = 0,
+    j = 0;
+  let allSelections = window.getSelection();
+  let rect;
+  for (i = 0; i < allSelections.rangeCount; i++) {
+    var aRange = allSelections.getRangeAt(i);
+    var rects = aRange.getClientRects();
+    for (j = 0; j < rects.length; j++) {
+      let currentRect = rects[j];
+      if (rect == null) {
+        rect = {};
+        rect.x = currentRect.x;
+        rect.y = currentRect.y;
+        rect.width = currentRect.width;
+        rect.height = currentRect.height;
+      } else {
+        if (currentRect.x < rect.x) {
+          rect.x = currentRect.x;
+        }
+
+        if (currentRect.y < rect.y) {
+          rect.y = currentRect.y;
+        }
+        let currentWidth = currentRect.right - rect.x;
+        if (currentWidth > rect.width) {
+          rect.width = currentWidth;
+        }
+        let currentHeight = currentRect.bottom - rect.y;
+        if (currentHeight > rect.height) {
+          rect.height = currentHeight;
+        }
+      }
+    }
+  }
+  return JSON.stringify(rect);
+}
 
 // Generate a GUID
 function guid() {
