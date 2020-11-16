@@ -9,6 +9,7 @@
 import UIKit
 import SafariServices
 import MenuItemKit
+import DTCoreText
 
 /// Protocol which is used from `FolioReaderPage`s.
 @objc public protocol FolioReaderPageDelegate: class {
@@ -69,10 +70,9 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
         self.readerContainer = FolioReaderContainer(withConfig: FolioReaderConfig(), folioReader: FolioReader(), epubPath: "")
         super.init(frame: frame)
         self.backgroundColor = UIColor.clear
-
         NotificationCenter.default.addObserver(self, selector: #selector(refreshPageMode), name: NSNotification.Name(rawValue: "needRefreshPageMode"), object: nil)
     }
-
+ 
     public func setup(withReaderContainer readerContainer: FolioReaderContainer) {
         self.readerContainer = readerContainer
         guard let readerContainer = self.readerContainer else { return }
@@ -145,6 +145,12 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
         let tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
         // Load the html into the webview
         webView?.alpha = 0
+        
+        let htmlData =  tempHtmlContent.data(using: String.Encoding.utf8)
+        
+        let attrString =   NSAttributedString(htmlData: htmlData, documentAttributes: nil)
+        print(attrString)
+
         webView?.loadHTMLString(tempHtmlContent, baseURL: baseURL)
     }
 
@@ -233,6 +239,10 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
         }
 
         guard let url = request.url else { return false }
+        
+        if scheme == "hello" {
+            print("google ")
+        }
 
         if scheme == "highlight" || scheme == "highlight-with-note" {
             shouldShowBar = false
@@ -372,6 +382,8 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
     @objc open func handleTapGesture(_ recognizer: UITapGestureRecognizer) {
         self.delegate?.pageTap?(recognizer)
         
+        InfoTipController.share.clear()
+        
         if let _navigationController = self.folioReader.readerCenter?.navigationController, (_navigationController.isNavigationBarHidden == true) {
             let selected = webView?.js("getSelectedText()")
             
@@ -485,25 +497,29 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
 
     // MARK: UIMenu visibility
 
-    override open func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        guard let webView = webView else { return false }
-
-        if UIMenuController.shared.menuItems?.count == 0 {
-            webView.isColors = false
-            webView.createMenu(options: false)
-        }
-
-        if !webView.isShare && !webView.isColors {
-            if let result = webView.js("getSelectedText()") , result.components(separatedBy: " ").count == 1 {
-                webView.isOneWord = true
-                webView.createMenu(options: false)
-            } else {
-                webView.isOneWord = false
-            }
-        }
-
-        return super.canPerformAction(action, withSender: sender)
-    }
+//    override open func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+//        guard let webView = webView else { return false }
+//
+//        
+//        if UIMenuController.shared.menuItems?.count == 0 {
+//            webView.isColors = false
+//            webView.createMenu(options: false)
+//        }
+//
+//        if !webView.isShare && !webView.isColors {
+//            if let result = webView.js("getSelectedText()") , result.components(separatedBy: " ").count == 1 {
+//                webView.isOneWord = true
+//                if  action == #selector(select(_:)) {
+//                    webView.createMenu(options: false)
+//                }
+//                
+//            } else {
+//                webView.isOneWord = false
+//            }
+//        }
+//
+//        return super.canPerformAction(action, withSender: sender)
+//    }
 
     // MARK: ColorView fix for horizontal layout
     @objc func refreshPageMode() {

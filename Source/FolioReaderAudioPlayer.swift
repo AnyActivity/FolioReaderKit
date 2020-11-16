@@ -513,10 +513,12 @@ open class FolioReaderAudioPlayer: NSObject {
      */
     func registerCommandsIfNeeded() {
 
+        return
         guard !registeredCommands else { return }
 
         let command = MPRemoteCommandCenter.shared()
         command.previousTrackCommand.isEnabled = true
+        
         command.previousTrackCommand.addTarget(handler: { (event) in
             self.playPrevChapter()
             return MPRemoteCommandHandlerStatus.success}

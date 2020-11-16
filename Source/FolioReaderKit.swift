@@ -23,6 +23,10 @@ internal let kCurrentTOCMenu = "com.folioreader.kCurrentTOCMenu"
 internal let kHighlightRange = 30
 internal let kReuseCellIdentifier = "com.folioreader.Cell.ReuseIdentifier"
 
+public func kitVersion()  {
+    print("12.3.1")
+}
+
 public enum FolioReaderError: Error, LocalizedError {
     case bookNotAvailable
     case errorInContainer
@@ -164,6 +168,7 @@ extension FolioReader {
         Bool = true) {
         let readerContainer = FolioReaderContainer(withConfig: config, folioReader: self, epubPath: epubPath, unzipPath: unzipPath, removeEpub: shouldRemoveEpub)
         self.readerContainer = readerContainer
+        readerContainer.modalPresentationStyle = .fullScreen
         parentViewController.present(readerContainer, animated: animated, completion: nil)
         addObservers()
     }
