@@ -1,14 +1,24 @@
+// swift-tools-version:5.0
 import PackageDescription
 
 let package = Package(
-	name: "FolioReaderKit",
-	dependencies: [
-		.Package(url: "https://github.com/ZipArchive/ZipArchive.git", majorVersion: 2, minor: 1),
-		.Package(url: "https://github.com/cxa/MenuItemKit.git", majorVersion: 3, minor: 0),
-		.Package(url: "https://github.com/zoonooz/ZFDragableModalTransition.git", majorVersion: 0, minor: 6),
-		.Package(url: "https://github.com/tadija/AEXML.git", majorVersion: 4, minor: 2),
-		.Package(url: "https://github.com/ArtSabintsev/FontBlaster.git", majorVersion: 4, minor: 0),
-		.Package(url: "https://github.com/fantim/JSQWebViewController.git", majorVersion: 6, minor: 1),
-		.Package(url: "https://github.com/realm/realm-cocoa.git", majorVersion: 3, minor: 1),
-	]
+    name: "FolioReaderKit",
+    platforms: [
+        .macOS(.v10_10), .iOS(.v12), .tvOS(.v9), .watchOS(.v3)
+    ],
+    products: [
+        .library(name: "FolioReaderKit", targets: ["FolioReaderKit"])
+    ],
+    dependencies: [
+        .package(url: "https://github.com/playstonex/ZipArchive.git", .branch("master")),
+        .package(url: "https://github.com/cxa/MenuItemKit.git", from: "4.0.1"),
+        .package(url: "https://github.com/playstonex/ZFDragableModalTransition.git", .branch("master")),
+        .package(url: "https://github.com/tadija/AEXML.git", from: "4.6.0"),
+        .package(url: "https://github.com/ArtSabintsev/FontBlaster.git", from: "5.1.1"),
+        .package(url: "https://github.com/realm/realm-cocoa.git",from: "10.1.1"),
+    ],
+    targets: [
+        .target(name: "FolioReaderKit",dependencies: ["ZipArchive","MenuItemKit","ZFDragableModalTransition","AEXML","FontBlaster","Realm", "RealmSwift"], path: "Source")
+    ]
+    
 )
